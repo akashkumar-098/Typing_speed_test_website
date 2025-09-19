@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Typing Speed Test - Easy / Medium / Hard</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#9aa6b2;
+      --accent:#4fd1c5;
+      --danger:#ff6b6b;
+      --glass: rgba(255,255,255,0.03);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071023 0%, #081224 100%);color:#e6eef6}
+    .wrap{max-width:1100px;margin:36px auto;padding:20px}
+    .header{display:flex;align-items:center;gap:16px}
+    .logo{background:linear-gradient(90deg,var(--accent),#60a5fa);width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#02101a}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:6px 0 0;color:var(--muted)}
+
+    .card{background:var(--card);border-radius:14px;padding:18px;margin-top:20px;box-shadow:0 6px 24px rgba(3,7,18,0.6)}
+
+    .toprow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .levels{display:flex;gap:8px}
+    .btn{background:var(--glass);border:0;padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
+    .btn.active{background:linear-gradient(90deg,var(--accent),#60a5fa);color:#02101a;font-weight:600}
+
+    .status{margin-left:auto;display:flex;gap:10px;align-items:center}
+    .stat{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:10px;text-align:center}
+    .stat .num{font-size:18px;font-weight:700}
+    .stat .lbl{font-size:12px;color:var(--muted)}
+
+    .content{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:16px}
+    @media(max-width:980px){.content{grid-template-columns:1fr}}
+
+    .sentence{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:16px;border-radius:12px;min-height:160px;overflow:auto}
+    .target{line-height:1.6;font-size:16px}
+    .target .correct{background:rgba(79,209,197,0.10);color:var(--accent)}
+    .target .wrong{background:rgba(255,107,107,0.12);color:var(--danger)}
+
+    textarea.input{width:100%;min-height:120px;margin-top:12px;padding:12px;border-radius:10px;border:0;background:rgba(0,0,0,0.3);color:#e6eef6;resize:vertical;font-size:16px;line-height:1.4}
+
+    .sidebar{display:flex;flex-direction:column;gap:12px}
+    .controls{display:flex;gap:10px}
+    .primary{background:linear-gradient(90deg,var(--accent),#60a5fa);border:0;color:#02101a;padding:10px 12px;border-radius:10px;cursor:pointer}
+    .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:10px;color:var(--muted);cursor:pointer}
+
+    .progress{height:10px;background:rgba(255,255,255,0.04);border-radius:12px;overflow:hidden}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#60a5fa);width:0%}
+
+    .meta{font-size:13px;color:var(--muted)}
+
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+
+    .small{font-size:13px;color:var(--muted)}
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="logo">TS</div>
+      <div>
+        <h1>Typing Speed Test</h1>
+        <p class="lead">3 levels — Easy / Medium / Hard. Random huge paragraphs. Type as accurately and fast as you can.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toprow">
+        <div class="levels">
+          <button class="btn active" data-level="easy">Easy</button>
+          <button class="btn" data-level="medium">Medium</button>
+          <button class="btn" data-level="hard">Hard</button>
+        </div>
+
+        <div class="status">
+          <div class="stat">
+            <div class="num" id="wpm">0</div>
+            <div class="lbl">WPM</div>
+          </div>
+          <div class="stat">
+            <div class="num" id="acc">100%</div>
+            <div class="lbl">Accuracy</div>
+          </div>
+          <div class="stat">
+            <div class="num" id="time">60s</div>
+            <div class="lbl">Time</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div>
+          <div class="sentence card-inner">
+            <div class="target" id="targetText">Loading...</div>
+          </div>
+
+          <textarea id="inputArea" class="input" placeholder="Yahan type karein..." spellcheck="false" autocomplete="off"></textarea>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+            <div class="small">Press <b>Enter</b> for next paragraph. Your mistakes will be highlighted.</div>
+            <div class="small">Tip: Start typing to begin the timer.</div>
+          </div>
+        </div>
+
+        <aside class="sidebar">
+          <div class="card" style="padding:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:700;font-size:16px" id="titleLevel">Easy</div>
+                <div class="meta">Timer and paragraph length change with level</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-weight:700;font-size:20px" id="timeLeft">60s</div>
+                <div class="meta">left</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <div class="progress" aria-hidden><i id="progBar"></i></div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="primary" id="restartBtn">Restart</button>
+                <button class="ghost" id="nextBtn">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:12px">
+            <div style="font-weight:700">Session stats</div>
+            <div style="margin-top:8px" class="meta">Words typed: <span id="wordsTyped">0</span></div>
+            <div class="meta">Characters typed: <span id="charsTyped">0</span></div>
+            <div class="meta">Errors: <span id="errors">0</span></div>
+          </div>
+
+          <div class="card" style="padding:12px">
+            <div style="font-weight:700">How scoring works</div>
+            <div class="meta" style="margin-top:8px">WPM = (correct characters / 5) / minutes. Accuracy = correctChars / typedChars.</div>
+          </div>
+
+        </aside>
+      </div>
+
+      <footer>Made quickly — save this page and open in any browser. Don't copy-paste; type to start the timer.</footer>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // Paragraph pools (longish paragraphs). Feel free to expand.
+  const PARAGRAPHS = {
+    easy: [
+      "Typing practice helps you build speed and accuracy. Practice a little every day and you will see steady improvement. Focus on correct finger placement and smooth rhythm.",
+      "Start slowly and concentrate on hitting the right keys. Accuracy matters more than speed at first. As errors decrease naturally your speed will rise.",
+      "Good posture and relaxed hands reduce fatigue. Keep your wrists level and use short sessions repeated across the day for best results."
+    ],
+    medium: [
+      "The human brain adjusts to repeated typing patterns, so consistent practice forms helpful muscle memory. Choose passages that challenge your weak keys and vary the content to avoid rote repetition.",
+      "When you practice with progressively longer paragraphs you learn to keep your focus and reduce distraction. Time yourself and aim to lower errors on each attempt while maintaining a steady pace.",
+      "If you make a mistake, don't stop—keep going and correct mistakes mentally. This trains you to keep flow under pressure which is important for tests or timed tasks."
+    ],
+    hard: [
+      "Advanced typing practice mixes punctuation, longer words and changes in rhythm. Practice with challenging paragraphs that include commas, parentheses and quotations to simulate real typing tasks like emails and coding.",
+      "To reach consistently high speeds you must train both accuracy and endurance. Long passages test your ability to maintain form. Schedule sessions with varied difficulty and rest well between them.",
+      "Experienced typists work on reducing unnecessary movements and increasing finger independence. Work on awkward letter combinations and maintain a relaxed but alert posture to avoid strain over long sessions."
+    ]
+  };
+
+  // Config per level
+  const LEVELS = {
+    easy: {time:60},
+    medium: {time:45},
+    hard: {time:30}
+  };
+
+  // DOM refs
+  const levelButtons = document.querySelectorAll('.btn[data-level]');
+  const targetText = document.getElementById('targetText');
+  const inputArea = document.getElementById('inputArea');
+  const wpmEl = document.getElementById('wpm');
+  const accEl = document.getElementById('acc');
+  const timeEl = document.getElementById('time');
+  const timeLeftEl = document.getElementById('timeLeft');
+  const progBar = document.getElementById('progBar');
+  const restartBtn = document.getElementById('restartBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const titleLevel = document.getElementById('titleLevel');
+  const wordsTypedEl = document.getElementById('wordsTyped');
+  const charsTypedEl = document.getElementById('charsTyped');
+  const errorsEl = document.getElementById('errors');
+
+  // state
+  let currentLevel = 'easy';
+  let currentText = '';
+  let timer = null;
+  let timeLeft = LEVELS[currentLevel].time;
+  let started = false;
+  let totalTyped = 0;
+  let correctChars = 0;
+  let errorCount = 0;
+  let startTime = null;
+
+  function pickParagraph(level){
+    const list = PARAGRAPHS[level];
+    // choose random index
+    const idx = Math.floor(Math.random()*list.length);
+    return list[idx];
+  }
+
+  function setLevel(level){
+    currentLevel = level;
+    levelButtons.forEach(b=>b.classList.toggle('active', b.dataset.level===level));
+    titleLevel.textContent = level[0].toUpperCase() + level.slice(1);
+    timeLeft = LEVELS[level].time;
+    timeLeftEl.textContent = timeLeft + 's';
+    timeEl.textContent = timeLeft + 's';
+    resetSession();
+    loadNewText();
+  }
+
+  function loadNewText(){
+    currentText = pickParagraph(currentLevel);
+    renderTarget();
+    inputArea.value = '';
+    inputArea.focus();
+    totalTyped = 0; correctChars = 0; errorCount = 0; started=false; startTime=null;
+    updateStats();
+  }
+
+  function renderTarget(){
+    // show text as a sequence of spans
+    const out = currentText.split('').map(ch => `<span>${escapeHtml(ch)}</span>`).join('');
+    targetText.innerHTML = out;
+  }
+
+  function escapeHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function startTimer(){
+    if(started) return;
+    started = true;
+    startTime = Date.now();
+    const total = LEVELS[currentLevel].time;
+    let left = total;
+    timeLeft = left;
+    timeLeftEl.textContent = left + 's';
+    timeEl.textContent = left + 's';
+    progBar.style.width = '0%';
+    timer = setInterval(()=>{
+      const elapsed = Math.floor((Date.now() - startTime)/1000);
+      left = Math.max(total - elapsed, 0);
+      timeLeft = left;
+      timeLeftEl.textContent = left + 's';
+      timeEl.textContent = left + 's';
+      const pct = ((total - left)/total)*100;
+      progBar.style.width = pct + '%';
+      if(left<=0){
+        clearInterval(timer); timer=null; finishTest();
+      }
+    },200);
+  }
+
+  function finishTest(){
+    inputArea.disabled = true;
+    const minutes = (LEVELS[currentLevel].time - timeLeft)/60 || 1/60;
+    const wpm = Math.round((correctChars/5)/minutes) || 0;
+    wpmEl.textContent = wpm;
+    alert(`Time over! WPM: ${wpm} — Accuracy: ${accEl.textContent}`);
+  }
+
+  function resetSession(){
+    if(timer) {clearInterval(timer); timer=null}
+    inputArea.disabled = false;
+    inputArea.value = '';
+    inputArea.focus();
+    totalTyped = 0; correctChars = 0; errorCount = 0; started=false; startTime=null;
+    wpmEl.textContent = '0';
+    accEl.textContent = '100%';
+    wordsTypedEl.textContent = '0';
+    charsTypedEl.textContent = '0';
+    errorsEl.textContent = '0';
+    progBar.style.width = '0%';
+  }
+
+  function updateStats(){
+    const typed = inputArea.value;
+    totalTyped = typed.length;
+    charsTypedEl.textContent = totalTyped;
+    // calculate correct chars and errors by comparing to target
+    let correct=0; let errors=0;
+    const target = currentText;
+    for(let i=0;i<typed.length;i++){
+      if(i>=target.length){ errors++; continue }
+      if(typed[i]===target[i]) correct++; else errors++;
+    }
+    correctChars = correct;
+    errorCount = errors;
+    errorsEl.textContent = errorCount;
+    wordsTypedEl.textContent = typed.trim().length ? typed.trim().split(/\s+/).length : 0;
+
+    const acc = totalTyped===0?100:Math.round((correct/totalTyped)*100);
+    accEl.textContent = acc + '%';
+
+    // WPM estimate
+    let minutesElapsed = ((Date.now() - (startTime||Date.now()))/1000)/60;
+    if(!started) minutesElapsed = 1/60; // avoid div by zero
+    const wpmCalc = Math.round((correctChars/5)/Math.max(minutesElapsed, 1/600));
+    wpmEl.textContent = isFinite(wpmCalc)?wpmCalc:0;
+
+    highlightText(typed);
+  }
+
+  function highlightText(typed){
+    const spans = targetText.querySelectorAll('span');
+    for(let i=0;i<spans.length;i++){
+      spans[i].className = '';
+      if(i<typed.length){
+        if(typed[i]===spans[i].textContent) spans[i].className='correct';
+        else spans[i].className='wrong';
+      }
+    }
+  }
+
+  // events
+  levelButtons.forEach(b=>b.addEventListener('click', ()=> setLevel(b.dataset.level)));
+
+  inputArea.addEventListener('input', (e)=>{
+    if(!started) startTimer();
+    updateStats();
+  });
+
+  inputArea.addEventListener('keydown', (e)=>{
+    if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){
+      // allow newline with ctrl+enter
+      return;
+    }
+    if(e.key==='Enter'){
+      e.preventDefault();
+      // go to next paragraph
+      loadNewText();
+    }
+  });
+
+  restartBtn.addEventListener('click', ()=>{
+    resetSession();
+    loadNewText();
+  });
+
+  nextBtn.addEventListener('click', ()=>{ loadNewText(); });
+
+  // initialize
+  setLevel('easy');
+
+})();
+</script>
+</body>
+  </html>
